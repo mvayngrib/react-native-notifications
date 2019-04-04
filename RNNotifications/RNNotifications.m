@@ -23,6 +23,8 @@ NSString* const RNNotificationActionTriggered = @"RNNotificationActionTriggered"
 NSString* const RNNotificationActionReceived = @"notificationActionReceived";
 //NSString* const RNNotificationActionDismissed = @"RNNotificationActionDismissed";
 
+NSString* const RNNErrorDomain = @"RNNNotificationsError";
+static const int RNNErrorCode = -1;
 
 ////////////////////////////////////////////////////////////////
 #pragma mark conversions
@@ -189,23 +191,34 @@ RCT_EXPORT_MODULE()
 #pragma mark private functions
 ////////////////////////////////////////////////////////////////
 
-+ (void)requestPermissionsWithCategories:(NSMutableSet *)categories
+- (void)requestPermissionsWithCategoriesInternal:(NSMutableSet *)categories
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
         [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error){
-            if(!error)
-            {
-                if (granted)
-                {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:categories];
-                        [[UIApplication sharedApplication] registerForRemoteNotifications];
-                    });
-                }
+            if (error) {
+                [self sendFailedToRegisterEvent:error];
+                return;
             }
+
+            if (!granted) {
+                [self sendFailedToRegisterEvent:[RNNotifications errorWithMessage:@"UserDenied"]];
+                return;
+            }
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:categories];
+                [[UIApplication sharedApplication] registerForRemoteNotifications];
+            });
         }];
     });
+}
+
++ (NSError *)errorWithMessage:(NSString *)errorMessage
+{
+    return [NSError errorWithDomain:RNNErrorDomain
+                               code:RNNErrorCode
+                           userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(errorMessage, nil) }];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -277,9 +290,15 @@ RCT_EXPORT_MODULE()
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
 {
+    [self sendFailedToRegisterEvent:error];
+}
+
+- (void)sendFailedToRegisterEvent:(NSError *)error
+{
     [self checkAndSendEvent:RNNotificationsRegistrationFailed
                        body:@{@"code": [NSNumber numberWithInteger:error.code], @"domain": error.domain, @"localizedDescription": error.localizedDescription}];
 }
+
 
 //the system calls this method when your app is running in the foreground or background
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
@@ -362,7 +381,7 @@ RCT_EXPORT_METHOD(requestPermissionsWithCategories:(NSArray *)json)
             [categories addObject:[RCTConvert UNNotificationCategory:dic]];
         }
     }
-    [RNNotifications requestPermissionsWithCategories:categories];
+    [self requestPermissionsWithCategoriesInternal:categories];
 }
 
 RCT_EXPORT_METHOD(localNotification:(NSDictionary *)notification withId:(NSString *)notificationId)
