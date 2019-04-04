@@ -174,7 +174,11 @@ RCT_EXPORT_MODULE()
     return self;
 }
 
-
++ (BOOL)requiresMainQueueSetup
+{
+    // TODO: figure out if we can return NO
+    return YES;
+}
 
 - (void)setBridge:(RCTBridge *)bridge
 {
