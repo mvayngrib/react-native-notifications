@@ -195,7 +195,7 @@ RCT_EXPORT_MODULE()
 #pragma mark private functions
 ////////////////////////////////////////////////////////////////
 
-- (void)requestPermissionsWithCategoriesInternal:(NSMutableSet *)categories
+- (void)requestPermissionsWithCategoriesInternal:(NSSet *)categories requestRemote: (BOOL) requestRemote
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -212,7 +212,11 @@ RCT_EXPORT_MODULE()
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:categories];
-                [[UIApplication sharedApplication] registerForRemoteNotifications];
+                if (requestRemote) {
+                    [[UIApplication sharedApplication] registerForRemoteNotifications];
+                } else {
+                    [self checkAndSendEvent:RNNotificationsRegistered body:@{}];
+                }
             });
         }];
     });
@@ -396,18 +400,12 @@ RCT_EXPORT_MODULE()
 #pragma mark exported method
 ////////////////////////////////////////////////////////////////
 
-RCT_EXPORT_METHOD(requestPermissionsWithCategories:(NSArray *)json)
+RCT_EXPORT_METHOD(requestPermissionsWithCategories:(NSDictionary *)json)
 {
-    NSMutableSet* categories = nil;
-    if ([json count] > 0)
-    {
-        categories = [NSMutableSet new];
-        for (NSDictionary* dic in json)
-        {
-            [categories addObject:[RCTConvert UNNotificationCategory:dic]];
-        }
-    }
-    [self requestPermissionsWithCategoriesInternal:categories];
+    NSArray *catsArr = [json valueForKey:@"categories"];
+    BOOL requestRemote = [json valueForKey:@"remote"];
+    NSSet* categories = [RNNotifications interpretNotificationCategories:catsArr];
+    [self requestPermissionsWithCategoriesInternal:categories requestRemote:requestRemote];
 }
 
 RCT_EXPORT_METHOD(localNotification:(NSDictionary *)notification withId:(NSString *)notificationId)
@@ -476,6 +474,21 @@ RCT_EXPORT_METHOD(setBadgesCount:(int)count)
     [[NSNotificationCenter defaultCenter] postNotificationName:RNNotificationOpened
                                                         object:self
                                                       userInfo:notification];
+}
+
++ (NSSet*) interpretNotificationCategories: (NSArray*)json {
+    NSMutableSet* categories = nil;
+    if ([json count] > 0)
+    {
+        categories = [NSMutableSet new];
+        for (NSDictionary* dic in json)
+        {
+            [categories addObject:[RCTConvert UNNotificationCategory:dic]];
+        }
+    }
+
+    // return immutable set
+    return [categories copy];
 }
 
 /*

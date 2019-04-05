@@ -120,7 +120,13 @@ export default class NotificationsIOS {
   /**
    * Sets the notification categories
    */
-  static requestPermissions(categories: Array<NotificationCategory>) {
+  static requestPermissions(opts) {
+    // backwards compat
+    if (Array.isArray(opts)) {
+      opts = { categories: opts }
+    }
+
+    const { categories, remote } = opts
     let notificationCategories = [];
 
     if (categories) {
@@ -139,7 +145,10 @@ export default class NotificationsIOS {
       });
     }
 
-    RNNotifications.requestPermissionsWithCategories(notificationCategories);
+    RNNotifications.requestPermissionsWithCategories({
+      categories: notificationCategories,
+      remote
+    });
   }
 
   /**
