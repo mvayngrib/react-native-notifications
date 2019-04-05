@@ -126,7 +126,7 @@ export default class NotificationsIOS {
       opts = { categories: opts }
     }
 
-    const { categories, remote } = opts
+    const { categories, remote=true } = opts
     let notificationCategories = [];
 
     if (categories) {
