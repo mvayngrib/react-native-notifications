@@ -402,8 +402,8 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(requestPermissionsWithCategories:(NSDictionary *)json)
 {
-    NSArray *catsArr = [json valueForKey:@"categories"];
-    BOOL requestRemote = [json valueForKey:@"remote"];
+    NSArray *catsArr = [RCTConvert NSArray:json[@"categories"]];
+    BOOL requestRemote = [RCTConvert BOOL:json[@"remote"]];
     NSSet* categories = [RNNotifications interpretNotificationCategories:catsArr];
     [self requestPermissionsWithCategoriesInternal:categories requestRemote:requestRemote];
 }
