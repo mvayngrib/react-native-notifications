@@ -40,7 +40,7 @@ And the following methods to support registration and receiving notifications:
   [[RNNRouter sharedInstance] application:application didFailToRegisterForRemoteNotificationsWithError:error];
 }
 
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSString *)deviceToken
 {
   [[RNNRouter sharedInstance] application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
@@ -77,7 +77,7 @@ Declare the library as a dependency in your **app-project's** `build.gradle`:
 ```gradle
 dependencies {
 	// ...
-	
+
 	compile project(':reactnativenotifications')
 }
 ```
