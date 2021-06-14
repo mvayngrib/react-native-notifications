@@ -238,7 +238,6 @@ RCT_EXPORT_MODULE()
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-      
         //        //TODO: check WTF is this
         //        NSMutableDictionary* newUserInfo = notification.request.content.userInfo.mutableCopy;
         //        [newUserInfo removeObjectForKey:@"__id"];
@@ -602,7 +601,7 @@ RCT_EXPORT_METHOD(consumeBackgroundQueue)
 {
     // Mark JS Thread as ready
     [RNNotificationsBridgeQueue sharedInstance].jsIsReady = YES;
-
+    
     // Push actions to JS
     [[RNNotificationsBridgeQueue sharedInstance] consumeActionsQueue:^(NSDictionary* action) {
         [self checkAndSendEvent:RNNotificationActionReceived body:action];
