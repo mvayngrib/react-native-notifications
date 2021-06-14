@@ -39,7 +39,7 @@
     if(self)
     {
         _pendingDelegateCalls = [NSMutableArray new];
-
+    
     }
     return self;
 }
@@ -48,15 +48,15 @@
 - (void)setDelegate:(id<RNNRerouterDelegate,UNUserNotificationCenterDelegate>)delegate
 {
     _delegate = delegate;
-
+    
     while (self.pendingDelegateCalls.count > 0)
     {
         void(^block)(void) = _pendingDelegateCalls.lastObject;
         block();
         [_pendingDelegateCalls removeLastObject];
     }
-
-
+    
+    
 }
 
 
@@ -78,7 +78,7 @@
     void(^callLaterBlock)(void) = ^{
         [self->_delegate userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
     };
-
+    
     if(_delegate)
     {
         callLaterBlock();
@@ -94,7 +94,7 @@
     void(^callLaterBlock)(void) = ^{
         [self->_delegate userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
     };
-
+    
     if(_delegate)
     {
         callLaterBlock();
