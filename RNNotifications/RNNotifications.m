@@ -238,7 +238,6 @@ RCT_EXPORT_MODULE()
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        
         //        //TODO: check WTF is this
         //        NSMutableDictionary* newUserInfo = notification.request.content.userInfo.mutableCopy;
         //        [newUserInfo removeObjectForKey:@"__id"];
@@ -309,10 +308,9 @@ RCT_EXPORT_MODULE()
     
 }
 
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSString *)deviceToken
 {
-    NSString * str = [RNNotifications deviceTokenToString:deviceToken];
-    [self checkAndSendEvent:RNNotificationsRegistered body:@{@"deviceToken":str}];
+    [self checkAndSendEvent:RNNotificationsRegistered body:@{@"deviceToken":deviceToken}];
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
