@@ -39,7 +39,7 @@
     if(self)
     {
         _pendingDelegateCalls = [NSMutableArray new];
-    
+        
     }
     return self;
 }
